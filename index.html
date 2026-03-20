@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VHCB FY2025 Housing & Conservation Intelligence Dashboard | Jaswanth Reddy Lanka</title>
+<meta name="description" content="Strategic analytics dashboard for the Vermont Housing & Conservation Board FY2025 — Built by Jaswanth Reddy Lanka, MS Business Analytics, UMass Amherst" />
+<meta property="og:title" content="VHCB FY2025 Intelligence Dashboard — Jaswanth Reddy Lanka" />
+<meta property="og:description" content="Interactive data dashboard analyzing VHCB's $106.7M FY2025 housing and conservation investments across Vermont's 14 counties." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.15.0/Recharts.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: #ECEEF1; color: #333; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+  select { cursor: pointer; outline: none; transition: border-color 0.2s; }
+  select:focus { border-color: #1F3864; }
+  table { border-collapse: collapse; }
+  @media (max-width: 900px) {
+    .dash-row { flex-direction: column !important; }
+    .kpi-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo } = React;
+const { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid, Legend } = Recharts;
+
+const NAVY = "#1F3864";
+const GOLD = "#C49A1A";
+const TEAL = "#1B6B7D";
+const CORAL = "#C44E3E";
+const GREEN = "#2C5F2D";
+const WHITE = "#FFFFFF";
+const COLORS = [NAVY, GOLD, TEAL, CORAL, GREEN, "#6B5B95", "#88B04B", "#F7786B", "#91A8D0", "#034F84"];
+
+const housingAwards = [
+  { id:1, org:"61 N Pleasant Dev", project:"61 North Pleasant", location:"Bradford", county:"Orange", vhcb:853529, totalCost:1983523, units:6, type:"Renovation", homeless:3, status:"Under Construction", fundSrc:"ARPA" },
+  { id:2, org:"Benn High LIHTC LP", project:"Bennington High Redevelopment", location:"Bennington", county:"Bennington", vhcb:3006614, totalCost:11598180, units:17, type:"Redevelopment", homeless:3, status:"Under Construction", fundSrc:"ARPA" },
+  { id:3, org:"Champlain Housing Trust", project:"Lake Street Shelter", location:"St. Albans", county:"Franklin", vhcb:879500, totalCost:879500, units:10, type:"Shelter", homeless:10, status:"Funded", fundSrc:"VHCB" },
+  { id:4, org:"CHT & Evernorth", project:"Supportive Housing — St. Paul St", location:"Burlington", county:"Chittenden", vhcb:2000000, totalCost:6898007, units:10, type:"I/DD Housing", homeless:10, status:"Funded", fundSrc:"VHCB+CDS" },
+  { id:5, org:"CHT & Evernorth", project:"Riggs Meadow", location:"Hinesburg", county:"Chittenden", vhcb:6091178, totalCost:19174093, units:36, type:"New Construction", homeless:3, status:"Under Construction", fundSrc:"HOME+NHTF" },
+  { id:6, org:"CVOEO", project:"St. Albans CVOEO Shelter", location:"St. Albans", county:"Franklin", vhcb:1351250, totalCost:1351250, units:15, type:"Shelter", homeless:15, status:"Funded", fundSrc:"VHCB" },
+  { id:7, org:"Cornerstone Housing", project:"Cora — Conant Community", location:"Brandon", county:"Rutland", vhcb:5375329, totalCost:13501148, units:41, type:"Preservation", homeless:0, status:"Under Construction", fundSrc:"VHCB+CDS" },
+  { id:8, org:"Cornerstone & Evernorth", project:"Maplewood Commons", location:"Rutland City", county:"Rutland", vhcb:6574496, totalCost:14617049, units:30, type:"New Construction", homeless:0, status:"Under Construction", fundSrc:"ARPA" },
+  { id:9, org:"Cornerstone & Naylor Breen", project:"Three 33 Jones Drive", location:"Brandon", county:"Rutland", vhcb:2821356, totalCost:12452085, units:29, type:"Adaptive Reuse", homeless:3, status:"Funded", fundSrc:"VHCB+NHTF" },
+  { id:10, org:"Downstreet Housing", project:"3-5 Hubbard Street", location:"Montpelier", county:"Washington", vhcb:651607, totalCost:1116592, units:4, type:"Renovation", homeless:0, status:"Funded", fundSrc:"VHCB" },
+  { id:11, org:"Downstreet Housing", project:"Speranza Inn", location:"Barre", county:"Washington", vhcb:8985593, totalCost:9147948, units:42, type:"Motel Conversion", homeless:42, status:"Operating", fundSrc:"VHCB" },
+  { id:12, org:"Downstreet Housing", project:"Stevens Branch Apartments", location:"Barre", county:"Washington", vhcb:6045000, totalCost:16834204, units:31, type:"New Construction", homeless:5, status:"Under Construction", fundSrc:"VHCB+CDS" },
+  { id:13, org:"Evernorth", project:"Copley Terrace Acquisition", location:"Morristown", county:"Lamoille", vhcb:1850000, totalCost:4903790, units:38, type:"Acquisition", homeless:0, status:"Funded", fundSrc:"VHCB" },
+  { id:14, org:"Riverflow Community", project:"Riverflow Community", location:"Ferrisburgh", county:"Addison", vhcb:425000, totalCost:1530165, units:4, type:"I/DD Housing", homeless:4, status:"Funded", fundSrc:"VHCB" },
+  { id:15, org:"RuralEdge", project:"Caledonia Renaissance", location:"St. Johnsbury", county:"Caledonia", vhcb:2770000, totalCost:8117729, units:18, type:"Preservation", homeless:0, status:"Under Construction", fundSrc:"VHCB+HOME" },
+  { id:16, org:"RuralEdge", project:"Crystal Lake Housing", location:"Barton", county:"Orleans", vhcb:852000, totalCost:1934390, units:15, type:"Preservation", homeless:0, status:"Funded", fundSrc:"VHCB" },
+  { id:17, org:"RuralEdge", project:"Moose River Warming Shelter", location:"St. Johnsbury", county:"Caledonia", vhcb:2662500, totalCost:2700000, units:40, type:"Shelter Expansion", homeless:40, status:"Under Construction", fundSrc:"VHCB" },
+  { id:18, org:"RuralEdge", project:"Newport Crossing", location:"Newport", county:"Orleans", vhcb:10499600, totalCost:21871159, units:43, type:"Mixed (LIHTC)", homeless:0, status:"Under Construction", fundSrc:"VHCB+ARPA" },
+  { id:19, org:"Upper Valley Services", project:"45 Water Street (Hamesbest)", location:"Randolph", county:"Orange", vhcb:1367955, totalCost:2062618, units:3, type:"I/DD Housing", homeless:3, status:"Under Construction", fundSrc:"VHCB" },
+  { id:20, org:"WWHT", project:"Alice Holway Drive", location:"Putney", county:"Windham", vhcb:4440533, totalCost:15352525, units:25, type:"New Construction", homeless:5, status:"Under Construction", fundSrc:"ARPA" },
+  { id:21, org:"WWHT & Evernorth", project:"Chalet Phase I", location:"Brattleboro", county:"Windham", vhcb:6200000, totalCost:17765500, units:31, type:"New Construction", homeless:6, status:"Funded", fundSrc:"VHCB+HOME-ARP" },
+  { id:22, org:"Twin Pines & Evernorth", project:"Sykes Mountain Apartments", location:"Hartford", county:"Windsor", vhcb:5029750, totalCost:21475850, units:48, type:"New Construction", homeless:6, status:"Under Construction", fundSrc:"VHCB+HOME+NHTF" },
+];
+
+const countyData = [
+  { county:"Chittenden", hpi:68.5, cri:43.1, sni:57.0, farmLoss:-2900, forestPct:61.4, medIncome:86920 },
+  { county:"Franklin", hpi:62.3, cri:47.7, sni:55.7, farmLoss:-6600, forestPct:62.4, medIncome:72154 },
+  { county:"Lamoille", hpi:66.9, cri:48.5, sni:58.6, farmLoss:-2500, forestPct:79.2, medIncome:72340 },
+  { county:"Orange", hpi:59.6, cri:63.5, sni:61.4, farmLoss:-4800, forestPct:82.8, medIncome:71218 },
+  { county:"Addison", hpi:38.9, cri:46.9, sni:42.5, farmLoss:-5600, forestPct:61.7, medIncome:88478 },
+  { county:"Orleans", hpi:54.2, cri:51.2, sni:52.8, farmLoss:-5500, forestPct:76.0, medIncome:59432 },
+  { county:"Washington", hpi:47.7, cri:51.2, sni:49.3, farmLoss:-3800, forestPct:76.7, medIncome:74850 },
+  { county:"Windham", hpi:48.1, cri:55.4, sni:51.4, farmLoss:-4400, forestPct:80.6, medIncome:72816 },
+  { county:"Windsor", hpi:41.9, cri:48.8, sni:45.0, farmLoss:-4800, forestPct:78.1, medIncome:76282 },
+  { county:"Bennington", hpi:42.7, cri:62.7, sni:51.7, farmLoss:-4900, forestPct:82.5, medIncome:71494 },
+  { county:"Rutland", hpi:25.4, cri:48.9, sni:36.0, farmLoss:-5600, forestPct:75.6, medIncome:68742 },
+  { county:"Caledonia", hpi:43.5, cri:45.4, sni:44.3, farmLoss:-3300, forestPct:79.5, medIncome:63518 },
+  { county:"Grand Isle", hpi:53.8, cri:39.6, sni:47.4, farmLoss:-600, forestPct:47.5, medIncome:87520 },
+  { county:"Essex", hpi:46.5, cri:47.3, sni:46.9, farmLoss:-1200, forestPct:95.5, medIncome:53482 },
+];
+
+const fmt = (n) => { if(n>=1e6) return "$"+(n/1e6).toFixed(1)+"M"; if(n>=1e3) return "$"+(n/1e3).toFixed(0)+"K"; return "$"+n; };
+
+function KPICard({ label, value, sub, color, icon }) {
+  return (
+    <div style={{ background:WHITE, borderRadius:10, padding:"16px 20px", borderTop:`3px solid ${color}`, boxShadow:"0 2px 8px rgba(0,0,0,0.06)", flex:1, minWidth:155, transition:"transform 0.2s" }}
+         onMouseEnter={e=>e.currentTarget.style.transform="translateY(-2px)"}
+         onMouseLeave={e=>e.currentTarget.style.transform="translateY(0)"}>
+      <div style={{ fontSize:11, color:"#888", fontWeight:500, letterSpacing:0.4, display:"flex", alignItems:"center", gap:6 }}>
+        <span style={{ fontSize:16 }}>{icon}</span>{label}
+      </div>
+      <div style={{ fontSize:26, fontWeight:700, color, marginTop:6, fontFamily:"'DM Sans', sans-serif" }}>{value}</div>
+      {sub && <div style={{ fontSize:10, color:"#aaa", marginTop:4 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const c = { "Operating":GREEN, "Under Construction":GOLD, "Funded":TEAL };
+  return <span style={{ background:c[status]||"#888", color:WHITE, fontSize:9, padding:"2px 10px", borderRadius:12, fontWeight:600, letterSpacing:0.3 }}>{status}</span>;
+}
+
+function SectionTitle({ children }) {
+  return <div style={{ fontSize:12, fontWeight:700, color:NAVY, marginBottom:10, textTransform:"uppercase", letterSpacing:0.6, fontFamily:"'DM Sans', sans-serif" }}>{children}</div>;
+}
+
+function Card({ children, style }) {
+  return <div style={{ background:WHITE, borderRadius:10, padding:18, boxShadow:"0 2px 8px rgba(0,0,0,0.06)", ...style }}>{children}</div>;
+}
+
+function App() {
+  const [county, setCounty] = useState("All");
+  const [type, setType] = useState("All");
+  const [hoveredProject, setHoveredProject] = useState(null);
+
+  const filtered = useMemo(() => {
+    let d = housingAwards;
+    if (county !== "All") d = d.filter(a => a.county === county);
+    if (type !== "All") d = d.filter(a => a.type === type);
+    return d;
+  }, [county, type]);
+
+  const totalVHCB = filtered.reduce((s,a) => s+a.vhcb, 0);
+  const totalCost = filtered.reduce((s,a) => s+a.totalCost, 0);
+  const totalUnits = filtered.reduce((s,a) => s+a.units, 0);
+  const totalHomeless = filtered.reduce((s,a) => s+a.homeless, 0);
+
+  const byCounty = useMemo(() => {
+    const m = {};
+    filtered.forEach(a => { m[a.county] = (m[a.county]||0) + a.vhcb; });
+    return Object.entries(m).map(([name,value]) => ({name,value})).sort((a,b) => b.value-a.value);
+  }, [filtered]);
+
+  const byType = useMemo(() => {
+    const m = {};
+    filtered.forEach(a => { m[a.type] = (m[a.type]||0) + a.vhcb; });
+    return Object.entries(m).map(([name,value]) => ({name:name.length>20?name.slice(0,18)+"…":name, value, fullName:name})).sort((a,b) => b.value-a.value);
+  }, [filtered]);
+
+  const byStatus = useMemo(() => {
+    const m = {};
+    filtered.forEach(a => { m[a.status] = (m[a.status]||0) + a.units; });
+    return Object.entries(m).map(([name,value]) => ({name,value}));
+  }, [filtered]);
+
+  const byOrg = useMemo(() => {
+    const m = {};
+    filtered.forEach(a => {
+      if(!m[a.org]) m[a.org] = {org:a.org, projects:0, vhcb:0, units:0};
+      m[a.org].projects++; m[a.org].vhcb+=a.vhcb; m[a.org].units+=a.units;
+    });
+    return Object.values(m).sort((a,b) => b.vhcb-a.vhcb).slice(0,8);
+  }, [filtered]);
+
+  const hpiSorted = [...countyData].sort((a,b) => b.sni-a.sni).slice(0,10);
+  const farmSorted = [...countyData].sort((a,b) => a.farmLoss-b.farmLoss).slice(0,8);
+
+  const counties = ["All", ...[...new Set(housingAwards.map(a=>a.county))].sort()];
+  const types = ["All", ...[...new Set(housingAwards.map(a=>a.type))].sort()];
+
+  const CTooltip = ({active,payload}) => {
+    if(!active||!payload?.[0]) return null;
+    return <div style={{background:WHITE,border:"1px solid #e0e0e0",borderRadius:8,padding:"10px 14px",fontSize:11,boxShadow:"0 4px 12px rgba(0,0,0,0.1)"}}>
+      <div style={{fontWeight:700,color:NAVY,marginBottom:2}}>{payload[0].payload.fullName||payload[0].payload.name||payload[0].payload.county}</div>
+      {payload.map((p,i)=><div key={i} style={{color:p.color||"#666"}}>{p.name}: {typeof p.value==="number"&&p.value>1000?fmt(p.value):p.value}</div>)}
+    </div>;
+  };
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#ECEEF1" }}>
+      {/* Nav */}
+      <div style={{ background:NAVY, padding:"0 28px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{ width:32, height:32, background:"rgba(255,255,255,0.12)", borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🏠</div>
+          <div>
+            <span style={{ fontSize:17, fontWeight:700, color:WHITE, fontFamily:"'DM Sans', sans-serif" }}>VHCB FY2025 </span>
+            <span style={{ fontSize:17, fontWeight:300, color:"rgba(255,255,255,0.7)" }}>Housing & Conservation Dashboard</span>
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <select value={county} onChange={e=>setCounty(e.target.value)}
+            style={{ padding:"7px 14px", borderRadius:8, border:"none", fontSize:12, color:NAVY, fontWeight:600, background:WHITE }}>
+            {counties.map(c=><option key={c} value={c}>{c==="All"?"All Counties":c+" County"}</option>)}
+          </select>
+          <select value={type} onChange={e=>setType(e.target.value)}
+            style={{ padding:"7px 14px", borderRadius:8, border:"none", fontSize:12, color:NAVY, fontWeight:600, background:WHITE }}>
+            {types.map(t=><option key={t} value={t}>{t==="All"?"All Project Types":t}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={{ background:GOLD, height:3 }} />
+
+      <div style={{ padding:"20px 28px", display:"flex", flexDirection:"column", gap:18 }}>
+        {/* KPIs */}
+        <div className="kpi-row" style={{ display:"flex", gap:14 }}>
+          <KPICard icon="💰" label="VHCB INVESTMENT" value={fmt(totalVHCB)} sub={`${filtered.length} projects funded`} color={NAVY} />
+          <KPICard icon="🏗️" label="TOTAL DEV COSTS" value={fmt(totalCost)} sub={`${fmt(totalCost-totalVHCB)} leveraged from partners`} color={TEAL} />
+          <KPICard icon="🏠" label="HOUSING UNITS" value={totalUnits.toLocaleString()} sub="Permanently affordable" color={GREEN} />
+          <KPICard icon="🛏️" label="HOMELESS-DEDICATED" value={totalHomeless.toLocaleString()} sub={totalUnits>0?`${((totalHomeless/totalUnits)*100).toFixed(0)}% of total units`:""} color={CORAL} />
+          <KPICard icon="📊" label="LEVERAGE RATIO" value={totalVHCB>0?`${(totalCost/totalVHCB).toFixed(1)}×`:"—"} sub="Total $ per VHCB $" color={GOLD} />
+        </div>
+
+        {/* Row 1: Charts */}
+        <div className="dash-row" style={{ display:"flex", gap:16 }}>
+          <Card style={{ flex:2 }}>
+            <SectionTitle>VHCB Investment by County</SectionTitle>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={byCounty} layout="vertical" margin={{left:0,right:30,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eee" />
+                <XAxis type="number" tickFormatter={v=>fmt(v)} tick={{fontSize:10,fill:"#888"}} />
+                <YAxis type="category" dataKey="name" width={85} tick={{fontSize:10,fill:"#555"}} />
+                <Tooltip content={<CTooltip/>} />
+                <Bar dataKey="value" name="VHCB $" fill={NAVY} radius={[0,6,6,0]} barSize={18} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+          <Card style={{ flex:1.4 }}>
+            <SectionTitle>Investment by Project Type</SectionTitle>
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={byType} cx="50%" cy="50%" outerRadius={85} innerRadius={45} dataKey="value" paddingAngle={2} strokeWidth={0}>
+                  {byType.map((_,i)=><Cell key={i} fill={COLORS[i%COLORS.length]} />)}
+                </Pie>
+                <Tooltip content={<CTooltip/>} />
+                <Legend iconSize={8} wrapperStyle={{fontSize:9}} />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+          <Card style={{ flex:1 }}>
+            <SectionTitle>Units by Project Status</SectionTitle>
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie data={byStatus} cx="50%" cy="50%" outerRadius={78} dataKey="value" label={({value})=>value} strokeWidth={0}>
+                  {byStatus.map((_,i)=><Cell key={i} fill={[GREEN,GOLD,TEAL,CORAL][i%4]} />)}
+                </Pie>
+                <Tooltip />
+                <Legend iconSize={8} wrapperStyle={{fontSize:9}} />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        </div>
+
+        {/* Row 2: Table + Top Orgs */}
+        <div className="dash-row" style={{ display:"flex", gap:16 }}>
+          <Card style={{ flex:2.5, overflow:"auto", maxHeight:360 }}>
+            <SectionTitle>FY2025 Housing Awards — Project Detail</SectionTitle>
+            <table style={{ width:"100%", fontSize:10.5 }}>
+              <thead>
+                <tr style={{ background:NAVY, color:WHITE }}>
+                  {["Project","Location","VHCB Award","Total Cost","Units","Type","Status"].map(h=>
+                    <th key={h} style={{ padding:"8px 10px", textAlign:["Project","Location","Type"].includes(h)?"left":"right", fontWeight:600, fontSize:10, letterSpacing:0.3, position:"sticky", top:0, background:NAVY, zIndex:1 }}>{h}</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((a,i)=>(
+                  <tr key={a.id} style={{ background:i%2===0?WHITE:"#F8F9FB", borderBottom:"1px solid #f0f0f0", transition:"background 0.15s", cursor:"default" }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#EDF2FA"}
+                      onMouseLeave={e=>e.currentTarget.style.background=i%2===0?WHITE:"#F8F9FB"}>
+                    <td style={{ padding:"7px 10px", fontWeight:600, color:NAVY }}>{a.project}</td>
+                    <td style={{ padding:"7px 10px", color:"#666" }}>{a.location}</td>
+                    <td style={{ padding:"7px 10px", textAlign:"right", color:NAVY, fontWeight:700 }}>{fmt(a.vhcb)}</td>
+                    <td style={{ padding:"7px 10px", textAlign:"right", color:"#555" }}>{fmt(a.totalCost)}</td>
+                    <td style={{ padding:"7px 10px", textAlign:"right", fontWeight:600 }}>{a.units}</td>
+                    <td style={{ padding:"7px 10px", color:"#666" }}>{a.type}</td>
+                    <td style={{ padding:"7px 10px", textAlign:"right" }}><StatusBadge status={a.status}/></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+          <Card style={{ flex:1.3 }}>
+            <SectionTitle>Top Grantee Organizations</SectionTitle>
+            <table style={{ width:"100%", fontSize:10.5 }}>
+              <thead>
+                <tr style={{ borderBottom:`2px solid ${NAVY}` }}>
+                  {["Organization","#","VHCB $","Units"].map(h=>
+                    <th key={h} style={{ padding:"6px 8px", textAlign:h==="Organization"?"left":"right", fontWeight:700, color:NAVY, fontSize:10 }}>{h}</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {byOrg.map((o,i)=>(
+                  <tr key={i} style={{ borderBottom:"1px solid #f0f0f0" }}>
+                    <td style={{ padding:"6px 8px", fontWeight:500, maxWidth:160, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{o.org}</td>
+                    <td style={{ padding:"6px 8px", textAlign:"right" }}>{o.projects}</td>
+                    <td style={{ padding:"6px 8px", textAlign:"right", color:NAVY, fontWeight:700 }}>{fmt(o.vhcb)}</td>
+                    <td style={{ padding:"6px 8px", textAlign:"right" }}>{o.units}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+
+        {/* Row 3: Strategic + Farm Loss + Act 59 */}
+        <div className="dash-row" style={{ display:"flex", gap:16 }}>
+          <Card style={{ flex:2 }}>
+            <SectionTitle>County Strategic Priority Index — Housing vs Conservation</SectionTitle>
+            <ResponsiveContainer width="100%" height={230}>
+              <BarChart data={hpiSorted} margin={{left:0,right:20,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
+                <XAxis dataKey="county" tick={{fontSize:9,fill:"#555"}} angle={-20} textAnchor="end" height={48} />
+                <YAxis domain={[0,100]} tick={{fontSize:10,fill:"#888"}} />
+                <Tooltip content={<CTooltip/>} />
+                <Bar dataKey="hpi" name="Housing Pressure" fill={CORAL} radius={[4,4,0,0]} barSize={14} />
+                <Bar dataKey="cri" name="Conservation Risk" fill={GREEN} radius={[4,4,0,0]} barSize={14} />
+                <Legend iconSize={8} wrapperStyle={{fontSize:10}} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+          <Card style={{ flex:1.2 }}>
+            <SectionTitle>Farmland Loss by County (2017–2022)</SectionTitle>
+            <ResponsiveContainer width="100%" height={230}>
+              <BarChart data={farmSorted} layout="vertical" margin={{left:0,right:20}}>
+                <XAxis type="number" tick={{fontSize:10,fill:"#888"}} tickFormatter={v=>`${(v/1000).toFixed(1)}K ac`} />
+                <YAxis type="category" dataKey="county" width={75} tick={{fontSize:9,fill:"#555"}} />
+                <Tooltip formatter={v=>`${v.toLocaleString()} acres`} />
+                <Bar dataKey="farmLoss" name="Acres Lost" fill={CORAL} radius={[0,4,4,0]} barSize={15} />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+          <div style={{ flex:1, background:NAVY, borderRadius:10, padding:18, boxShadow:"0 2px 8px rgba(0,0,0,0.12)", color:WHITE }}>
+            <div style={{ fontSize:11, fontWeight:700, color:GOLD, textTransform:"uppercase", letterSpacing:0.6, marginBottom:12, fontFamily:"'DM Sans', sans-serif" }}>Act 59 — Path to 30×30</div>
+            <div style={{ position:"relative", height:14, background:"rgba(255,255,255,0.12)", borderRadius:7, marginBottom:18, overflow:"hidden" }}>
+              <div style={{ width:"89.3%", height:"100%", background:`linear-gradient(90deg, ${GREEN}, ${TEAL})`, borderRadius:7 }} />
+            </div>
+            <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14, fontSize:10 }}>
+              <span style={{ color:"rgba(255,255,255,0.6)" }}>26.8% conserved</span>
+              <span style={{ color:GOLD, fontWeight:700 }}>30% goal →</span>
+            </div>
+            {[
+              {l:"Total Conserved", v:"1.58M acres"},
+              {l:"Gap to 30×30", v:"~190K acres"},
+              {l:"FY25 Farms Conserved", v:"21 farms"},
+              {l:"FY25 Land Protected", v:"5,742 acres"},
+              {l:"FY25 Awards", v:"$106.7M"},
+              {l:"Partner Leverage", v:"$181M"},
+              {l:"Admin Overhead", v:"Only 5%"},
+            ].map((r,i)=>(
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", borderBottom:"1px solid rgba(255,255,255,0.08)", fontSize:11 }}>
+                <span style={{ color:"rgba(255,255,255,0.65)" }}>{r.l}</span>
+                <span style={{ fontWeight:700, color:GOLD }}>{r.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign:"center", padding:"12px 0 20px", fontSize:11, color:"#999" }}>
+          Built by <strong style={{ color:NAVY }}>Jaswanth Reddy Lanka</strong> &nbsp;|&nbsp;
+          MS Business Analytics, UMass Amherst (GPA 3.8) &nbsp;|&nbsp;
+          <a href="mailto:jaswanth.reddy060@gmail.com" style={{ color:TEAL, textDecoration:"none" }}>jaswanth.reddy060@gmail.com</a> &nbsp;|&nbsp;
+          (413) 510-7534 &nbsp;|&nbsp;
+          Data: <a href="https://vhcb.org" target="_blank" style={{ color:TEAL, textDecoration:"none" }}>VHCB 2025 Annual Report</a> to the Vermont General Assembly
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
