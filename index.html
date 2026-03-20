@@ -1,714 +1,1221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VHCB FY2025 Strategic Housing & Conservation Dashboard | Jaswanth Reddy Lanka</title>
-  <meta
-    name="description"
-    content="Executive-style dashboard analyzing VHCB FY2025 housing and conservation investments across Vermont."
-  />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@500;700&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VHCB FY2025 Strategic Housing & Conservation Dashboard | Jaswanth Reddy Lanka</title>
+<meta name="description" content="Executive-style dashboard analyzing VHCB FY2025 housing and conservation investments across Vermont." />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F5F7FA;
+    --surface:#FFFFFF;
+    --surface-2:#F9FBFD;
+    --border:#E5EAF0;
+    --text:#142033;
+    --muted:#667085;
+    --muted-2:#98A2B3;
+
+    --navy:#12355B;
+    --navy-2:#0F2947;
+    --teal:#16697A;
+    --green:#2F6B3C;
+    --gold:#C9A227;
+    --red:#B54745;
+    --purple:#6B5B95;
+
+    --shadow-sm:0 1px 2px rgba(16,24,40,.04);
+    --shadow-md:0 8px 24px rgba(16,24,40,.06);
+    --shadow-lg:0 16px 40px rgba(16,24,40,.08);
+
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:20px;
+    --maxw:1440px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(circle at top left, rgba(18,53,91,.06), transparent 28%),
+      radial-gradient(circle at top right, rgba(47,107,60,.05), transparent 25%),
+      var(--bg);
+    color:var(--text);
+  }
+
+  ::-webkit-scrollbar{width:7px;height:7px}
+  ::-webkit-scrollbar-thumb{background:#C9D2DE;border-radius:999px}
+
+  .shell{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:20px 22px 36px;
+  }
+
+  .topbar{
+    background:linear-gradient(135deg, var(--navy), var(--navy-2));
+    color:#fff;
+    border-radius:22px;
+    padding:22px 24px 18px;
+    box-shadow:var(--shadow-lg);
+    position:sticky;
+    top:10px;
+    z-index:20;
+    border:1px solid rgba(255,255,255,.08);
+  }
+
+  .topbar-row{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+  }
+
+  .brand{
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+  }
+
+  .brand-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15);
+    font-size:24px;
+    flex:0 0 auto;
+  }
+
+  .eyebrow{
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.72);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  .title{
+    font-family:'DM Sans',sans-serif;
+    font-size:30px;
+    line-height:1.05;
+    font-weight:700;
+    letter-spacing:-.03em;
+  }
+
+  .subtitle{
+    margin-top:8px;
+    color:rgba(255,255,255,.8);
+    font-size:13px;
+    line-height:1.5;
+    max-width:760px;
+  }
+
+  .filters{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);
+    color:#fff;
+    font-size:12px;
+    border-radius:12px;
+  }
+
+  select{
+    appearance:none;
+    cursor:pointer;
+    outline:none;
+    border:1px solid rgba(255,255,255,.14);
+    padding:10px 12px;
+    min-width:170px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:700;
+    color:var(--navy);
+    background:#fff;
+    font-family:inherit;
+    box-shadow:var(--shadow-sm);
+  }
+
+  .topbar-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid rgba(255,255,255,.12);
+    flex-wrap:wrap;
+  }
+
+  .topbar-meta{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    color:rgba(255,255,255,.82);
+    font-size:12px;
+  }
+
+  .topbar-meta strong{color:#fff}
+
+  .section{
+    margin-top:18px;
+  }
+
+  .grid{
+    display:grid;
+    gap:16px;
+  }
+
+  .kpi-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+  }
+
+  .main-grid{
+    grid-template-columns:320px minmax(0,1fr);
+    align-items:start;
+  }
+
+  .chart-grid{
+    grid-template-columns:1.6fr 1fr 1fr;
+  }
+
+  .detail-grid{
+    grid-template-columns:1.9fr 1fr;
+  }
+
+  .bottom-grid{
+    grid-template-columns:1.4fr 1fr 320px;
+  }
+
+  .card{
+    background:rgba(255,255,255,.88);
+    backdrop-filter:blur(10px);
+    border:1px solid var(--border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-md);
+    padding:18px 18px 16px;
+  }
+
+  .card-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+  }
+
+  .card-title{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+
+  .card-subtitle{
+    font-size:12px;
+    line-height:1.45;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .kpi{
+    position:relative;
+    overflow:hidden;
+    padding:18px 18px 16px;
+  }
+
+  .kpi::before{
+    content:"";
+    position:absolute;
+    inset:0 auto 0 0;
+    width:4px;
+    border-radius:999px;
+  }
+
+  .kpi.navy::before{background:var(--navy)}
+  .kpi.teal::before{background:var(--teal)}
+  .kpi.green::before{background:var(--green)}
+  .kpi.red::before{background:var(--red)}
+  .kpi.gold::before{background:var(--gold)}
+
+  .kpi-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+  }
+
+  .kpi-value{
+    font-family:'DM Sans',sans-serif;
+    font-size:31px;
+    line-height:1;
+    letter-spacing:-.03em;
+    margin-top:10px;
+    font-weight:700;
+    color:var(--text);
+  }
+
+  .kpi-sub{
+    margin-top:8px;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.45;
+  }
+
+  .kpi-mini{
+    margin-top:12px;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    border-top:1px solid var(--border);
+    padding-top:10px;
+    font-size:11px;
+    color:var(--muted);
+  }
+
+  .kpi-mini strong{
+    display:block;
+    color:var(--text);
+    font-size:12px;
+    margin-top:2px;
+  }
+
+  .insight-rail{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .hero-card{
+    background:linear-gradient(180deg,#163A63,#0F2947);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .hero-title{
+    font-family:'DM Sans',sans-serif;
+    font-size:18px;
+    line-height:1.2;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+
+  .hero-text{
+    color:rgba(255,255,255,.82);
+    font-size:13px;
+    line-height:1.6;
+  }
+
+  .callout{
+    background:linear-gradient(135deg, rgba(201,162,39,.14), rgba(47,107,60,.08));
+    border:1px solid rgba(201,162,39,.28);
+  }
+
+  .callout-title{
+    font-size:11px;
+    color:var(--gold);
+    text-transform:uppercase;
+    font-weight:800;
+    letter-spacing:.12em;
+    margin-bottom:10px;
+  }
+
+  .callout-stat{
+    font-family:'DM Sans',sans-serif;
+    font-size:34px;
+    line-height:1;
+    color:var(--navy);
+    letter-spacing:-.03em;
+  }
+
+  .callout-copy{
+    margin-top:8px;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.55;
+  }
+
+  .insight-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:4px;
+  }
+
+  .insight-item{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    padding:10px 0;
+    border-top:1px solid var(--border);
+  }
+
+  .insight-item:first-child{border-top:none;padding-top:0}
+
+  .insight-dot{
+    width:10px;height:10px;border-radius:999px;margin-top:5px;flex:0 0 auto;
+  }
+
+  .d-red{background:var(--red)}
+  .d-green{background:var(--green)}
+  .d-gold{background:var(--gold)}
+  .d-teal{background:var(--teal)}
+
+  .insight-item strong{
+    display:block;
+    font-size:13px;
+    color:var(--text);
+    margin-bottom:3px;
+  }
+
+  .insight-item span{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.5;
+  }
+
+  .chart-wrap{
+    height:280px;
+  }
+
+  .chart-wrap.sm{
+    height:250px;
+  }
+
+  .chart-wrap.xs{
+    height:220px;
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+  }
+
+  thead tr{
+    background:#F1F5F9;
+    color:var(--navy);
+  }
+
+  th{
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:#F1F5F9;
+    padding:11px 10px;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:800;
+    border-bottom:1px solid var(--border);
+  }
+
+  td{
+    padding:11px 10px;
+    border-bottom:1px solid #EEF2F6;
+    color:var(--text);
+    vertical-align:middle;
+  }
+
+  tbody tr{
+    transition:.16s ease;
+  }
+
+  tbody tr:nth-child(even){
+    background:#FBFCFE;
+  }
+
+  tbody tr:hover{
+    background:#F3F7FB;
+  }
+
+  .tl{text-align:left}
+  .tr{text-align:right}
+
+  .table-scroll{
+    overflow:auto;
+    max-height:430px;
+    border-radius:14px;
+    border:1px solid var(--border);
+  }
+
+  .project-name{
+    font-weight:700;
+    color:var(--navy);
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:118px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:10px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-weight:800;
+    border:1px solid transparent;
+  }
+
+  .b-op{background:rgba(47,107,60,.12); color:var(--green); border-color:rgba(47,107,60,.2)}
+  .b-uc{background:rgba(201,162,39,.14); color:#8A6D12; border-color:rgba(201,162,39,.24)}
+  .b-fu{background:rgba(22,105,122,.12); color:var(--teal); border-color:rgba(22,105,122,.2)}
+
+  .rank-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .rank-row{
+    display:grid;
+    grid-template-columns:34px 1fr auto auto;
+    gap:10px;
+    align-items:center;
+    padding:10px 12px;
+    border-radius:14px;
+    background:#F8FAFC;
+    border:1px solid var(--border);
+  }
+
+  .rank-num{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--navy);
+    color:#fff;
+    font-weight:800;
+    font-size:12px;
+  }
+
+  .rank-name{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+  }
+
+  .rank-meta{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+
+  .rank-val{
+    font-family:'DM Sans',sans-serif;
+    font-size:18px;
+    font-weight:700;
+    color:var(--navy);
+  }
+
+  .progress-panel{
+    background:linear-gradient(180deg, #12355B, #0F2947);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.06);
+  }
+
+  .progress-title{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+    color:rgba(255,255,255,.76);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  .progress-bar{
+    height:16px;
+    background:rgba(255,255,255,.12);
+    border-radius:999px;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+
+  .progress-fill{
+    height:100%;
+    width:89.3%;
+    background:linear-gradient(90deg, var(--green), var(--gold));
+    border-radius:999px;
+  }
+
+  .progress-meta{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:12px;
+    color:rgba(255,255,255,.76);
+    margin-bottom:14px;
+  }
+
+  .metric-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:8px;
+  }
+
+  .metric{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    padding:10px 0;
+    border-top:1px solid rgba(255,255,255,.1);
+    font-size:12px;
+  }
+
+  .metric:first-child{border-top:none;padding-top:0}
+  .metric span:first-child{color:rgba(255,255,255,.72)}
+  .metric strong{color:#fff}
+
+  .footer{
+    margin-top:18px;
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+  }
+
+  .footer strong{color:var(--navy)}
+  .footer a{color:var(--teal);text-decoration:none}
+
+  @media (max-width:1200px){
+    .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .chart-grid{grid-template-columns:1fr}
+    .detail-grid{grid-template-columns:1fr}
+    .bottom-grid{grid-template-columns:1fr}
+    .main-grid{grid-template-columns:1fr}
+  }
+
+  @media (max-width:760px){
+    .shell{padding:14px}
+    .topbar{padding:18px}
+    .title{font-size:24px}
+    .kpi-grid{grid-template-columns:1fr}
+    .filters{width:100%}
+    select{width:100%}
+  }
+</style>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="topbar-row">
-        <div class="brand">
-          <div class="brand-icon">🏠</div>
-          <div>
-            <div class="eyebrow">Strategic Portfolio Project</div>
-            <div class="title">VHCB FY2025 Housing & Conservation Dashboard</div>
-            <div class="subtitle">
-              Executive-style analysis of VHCB housing investment, development leverage,
-              conservation pressure, and county-level strategic need across Vermont.
-            </div>
-          </div>
-        </div>
+<div class="shell">
 
-        <div class="filters">
-          <div class="chip">Filter view</div>
-          <select id="fC">
-            <option value="All">All Counties</option>
-          </select>
-          <select id="fT">
-            <option value="All">All Project Types</option>
-          </select>
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-icon">🏠</div>
+        <div>
+          <div class="eyebrow">Strategic Portfolio Project</div>
+          <div class="title">VHCB FY2025 Housing & Conservation Dashboard</div>
+          <div class="subtitle">
+            Executive-style analysis of VHCB housing investment, development leverage, conservation pressure, and county-level strategic need across Vermont.
+          </div>
         </div>
       </div>
 
-      <div class="topbar-footer">
-        <div class="topbar-meta">
-          <span><strong>Analyst:</strong> Jaswanth Reddy Lanka</span>
-          <span><strong>Program Lens:</strong> Affordable Housing + Conservation</span>
-          <span><strong>Coverage:</strong> FY2025 Housing Awards</span>
-        </div>
-        <div class="topbar-meta">
-          <span><strong>Data:</strong> VHCB Annual Report, ACS, USDA, UVM</span>
+      <div class="filters">
+        <div class="chip">Filter view</div>
+        <select id="fC"><option value="All">All Counties</option></select>
+        <select id="fT"><option value="All">All Project Types</option></select>
+      </div>
+    </div>
+
+    <div class="topbar-footer">
+      <div class="topbar-meta">
+        <span><strong>Analyst:</strong> Jaswanth Reddy Lanka</span>
+        <span><strong>Program Lens:</strong> Affordable Housing + Conservation</span>
+        <span><strong>Coverage:</strong> FY2025 Housing Awards</span>
+      </div>
+      <div class="topbar-meta">
+        <span><strong>Data:</strong> VHCB Annual Report, ACS, USDA, UVM</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="section grid main-grid">
+    <aside class="insight-rail">
+      <div class="card hero-card">
+        <div class="hero-title">What this dashboard is saying</div>
+        <div class="hero-text">
+          VHCB’s strongest value comes from solving a dual-mission problem: deliver affordable homes while protecting the land systems that make Vermont resilient.
         </div>
       </div>
-    </header>
 
-    <section class="section grid main-grid">
-      <aside class="insight-rail">
-        <div class="card hero-card">
-          <div class="hero-title">What this dashboard is saying</div>
-          <div class="hero-text">
-            VHCB’s strongest value comes from solving a dual-mission problem:
-            deliver affordable homes while protecting the land systems that make Vermont resilient.
-          </div>
+      <div class="card callout">
+        <div class="callout-title">Executive headline</div>
+        <div class="callout-stat" id="execStat">1.7×</div>
+        <div class="callout-copy">
+          VHCB capital is leveraging significant partner investment while keeping a meaningful share of units permanently affordable.
         </div>
+      </div>
 
-        <div class="card callout">
-          <div class="callout-title">Executive headline</div>
-          <div class="callout-stat" id="execStat">1.7×</div>
-          <div class="callout-copy">
-            VHCB capital is leveraging significant partner investment while keeping a meaningful
-            share of units permanently affordable.
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Recruiter-ready insights</div>
-          <div class="insight-list">
-            <div class="insight-item">
-              <div class="insight-dot d-red"></div>
-              <div>
-                <strong>Housing pressure is concentrated, not uniform.</strong>
-                <span>Chittenden, Franklin, and Lamoille emerge as the most urgent pressure zones.</span>
-              </div>
-            </div>
-
-            <div class="insight-item">
-              <div class="insight-dot d-green"></div>
-              <div>
-                <strong>Conservation risk and housing need overlap.</strong>
-                <span>Orange and Franklin reflect the kind of dual-mission tension VHCB is uniquely positioned to manage.</span>
-              </div>
-            </div>
-
-            <div class="insight-item">
-              <div class="insight-dot d-gold"></div>
-              <div>
-                <strong>Leverage and project mix matter.</strong>
-                <span>New construction and redevelopment projects are driving both scale and long-term affordability outcomes.</span>
-              </div>
-            </div>
-
-            <div class="insight-item">
-              <div class="insight-dot d-teal"></div>
-              <div>
-                <strong>Program story is visible in the data.</strong>
-                <span>This isn’t just project tracking — it’s a portfolio view of mission delivery.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <div class="right-column">
-        <div class="grid kpi-grid">
-          <div class="card kpi navy">
-            <div class="kpi-label">💰 VHCB Investment</div>
-            <div class="kpi-value" id="k1">—</div>
-            <div class="kpi-sub" id="k1s">—</div>
-            <div class="kpi-mini">
-              <div>Projects<strong id="k1m1">—</strong></div>
-              <div>Avg / Project<strong id="k1m2">—</strong></div>
-            </div>
-          </div>
-
-          <div class="card kpi teal">
-            <div class="kpi-label">🏗 Total Development Cost</div>
-            <div class="kpi-value" id="k2">—</div>
-            <div class="kpi-sub" id="k2s">—</div>
-            <div class="kpi-mini">
-              <div>Partner Capital<strong id="k2m1">—</strong></div>
-              <div>Leverage Pool<strong id="k2m2">—</strong></div>
-            </div>
-          </div>
-
-          <div class="card kpi green">
-            <div class="kpi-label">🏠 Housing Units</div>
-            <div class="kpi-value" id="k3">—</div>
-            <div class="kpi-sub">Permanently affordable or mission-aligned units</div>
-            <div class="kpi-mini">
-              <div>Units / Project<strong id="k3m1">—</strong></div>
-              <div>Largest Project<strong id="k3m2">—</strong></div>
-            </div>
-          </div>
-
-          <div class="card kpi red">
-            <div class="kpi-label">🛏 Homeless-Dedicated</div>
-            <div class="kpi-value" id="k4">—</div>
-            <div class="kpi-sub" id="k4s">—</div>
-            <div class="kpi-mini">
-              <div>Share of Units<strong id="k4m1">—</strong></div>
-              <div>Mission Intensity<strong id="k4m2">High</strong></div>
-            </div>
-          </div>
-
-          <div class="card kpi gold">
-            <div class="kpi-label">📈 Leverage Ratio</div>
-            <div class="kpi-value" id="k5">—</div>
-            <div class="kpi-sub">Total development dollars per VHCB dollar</div>
-            <div class="kpi-mini">
-              <div>Cost / Unit<strong id="k5m1">—</strong></div>
-              <div>VHCB / Unit<strong id="k5m2">—</strong></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card map-card">
-          <div class="card-header">
+      <div class="card">
+        <div class="card-title">Recruiter-ready insights</div>
+        <div class="insight-list">
+          <div class="insight-item">
+            <div class="insight-dot d-red"></div>
             <div>
-              <div class="card-title">Vermont Geographic Context</div>
-              <div class="card-subtitle">
-                Strategic visual framing of Vermont’s housing-conservation landscape,
-                with highest pressure counties highlighted.
-              </div>
+              <strong>Housing pressure is concentrated, not uniform.</strong>
+              <span>Chittenden, Franklin, and Lamoille emerge as the most urgent pressure zones.</span>
             </div>
           </div>
-
-          <div class="map-wrap">
-            <div class="map-inner">
-              <svg class="vt-svg" viewBox="0 0 320 560" xmlns="http://www.w3.org/2000/svg" aria-label="Stylized Vermont map">
-                <defs>
-                  <linearGradient id="vtFill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="#1D4D7A"/>
-                    <stop offset="100%" stop-color="#12355B"/>
-                  </linearGradient>
-                  <linearGradient id="highlightFill" x1="0" x2="1">
-                    <stop offset="0%" stop-color="#C9A227"/>
-                    <stop offset="100%" stop-color="#E2C55B"/>
-                  </linearGradient>
-                </defs>
-
-                <path d="M84 18
-                         L246 18
-                         L259 82
-                         L248 140
-                         L258 214
-                         L243 274
-                         L247 338
-                         L230 398
-                         L236 458
-                         L218 530
-                         L72 530
-                         L78 460
-                         L61 392
-                         L68 334
-                         L55 270
-                         L63 212
-                         L52 146
-                         L67 86
-                         L84 18Z"
-                      fill="url(#vtFill)" stroke="#0E2742" stroke-width="4" />
-
-                <rect x="150" y="92" width="54" height="52" rx="8" fill="url(#highlightFill)" opacity=".95"/>
-                <rect x="126" y="160" width="62" height="60" rx="8" fill="#B54745" opacity=".92"/>
-                <rect x="94" y="232" width="80" height="66" rx="8" fill="#2F6B3C" opacity=".92"/>
-                <rect x="164" y="300" width="48" height="62" rx="8" fill="#16697A" opacity=".92"/>
-
-                <text x="208" y="118" class="county-label">Lamoille</text>
-                <text x="194" y="188" class="county-label">Chittenden</text>
-                <text x="182" y="262" class="county-label">Orange</text>
-                <text x="220" y="334" class="county-label">Windham</text>
-
-                <text x="92" y="64" class="county-label map-title-inside">Strategic focus zones</text>
-              </svg>
+          <div class="insight-item">
+            <div class="insight-dot d-green"></div>
+            <div>
+              <strong>Conservation risk and housing need overlap.</strong>
+              <span>Orange and Franklin reflect the kind of dual-mission tension VHCB is uniquely positioned to manage.</span>
             </div>
           </div>
-
-          <div class="map-legend">
-            <div class="legend-pill"><span class="legend-swatch" style="background:#B54745"></span> Highest housing pressure</div>
-            <div class="legend-pill"><span class="legend-swatch" style="background:#2F6B3C"></span> High conservation need</div>
-            <div class="legend-pill"><span class="legend-swatch" style="background:#C9A227"></span> Dual-mission priority</div>
-            <div class="legend-pill"><span class="legend-swatch" style="background:#16697A"></span> Emerging opportunity</div>
+          <div class="insight-item">
+            <div class="insight-dot d-gold"></div>
+            <div>
+              <strong>Leverage and project mix matter.</strong>
+              <span>New construction and redevelopment projects are driving both scale and long-term affordability outcomes.</span>
+            </div>
           </div>
-
-          <div class="map-side-note">
-            <div class="map-metric">
-              <div class="map-metric-label">Top Housing Pressure</div>
-              <div class="map-metric-value">Chittenden</div>
-              <div class="map-metric-sub">Highest modeled affordability pressure in the state.</div>
-            </div>
-            <div class="map-metric">
-              <div class="map-metric-label">Top Dual-Mission Zone</div>
-              <div class="map-metric-value">Orange</div>
-              <div class="map-metric-sub">Strong overlap between land protection urgency and housing need.</div>
-            </div>
-            <div class="map-metric">
-              <div class="map-metric-label">Fastest Conflict Growth</div>
-              <div class="map-metric-value">Franklin</div>
-              <div class="map-metric-sub">Farmland loss + regional housing spillover makes this a key watch zone.</div>
+          <div class="insight-item">
+            <div class="insight-dot d-teal"></div>
+            <div>
+              <strong>Program story is visible in the data.</strong>
+              <span>This isn’t just project tracking — it’s a portfolio view of mission delivery.</span>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </aside>
 
-    <section class="section grid chart-grid">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Investment by County</div>
-            <div class="card-subtitle">Where FY2025 housing capital is concentrated across Vermont counties.</div>
-          </div>
-        </div>
-        <div class="chart-wrap"><canvas id="c1"></canvas></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Project Mix</div>
-            <div class="card-subtitle">Distribution of VHCB investment by project type.</div>
-          </div>
-        </div>
-        <div class="chart-wrap"><canvas id="c2"></canvas></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Units by Status</div>
-            <div class="card-subtitle">Portfolio staging across funded, active, and operating projects.</div>
-          </div>
-        </div>
-        <div class="chart-wrap"><canvas id="c3"></canvas></div>
-      </div>
-    </section>
-
-    <section class="section grid detail-grid">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">FY2025 Housing Awards — Project Detail</div>
-            <div class="card-subtitle">Project-level view of award size, development cost, units, and delivery status.</div>
-          </div>
-        </div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th class="tl">Project</th>
-                <th class="tl">Location</th>
-                <th class="tr">VHCB Award</th>
-                <th class="tr">Total Cost</th>
-                <th class="tr">Units</th>
-                <th class="tl">Type</th>
-                <th class="tr">Status</th>
-              </tr>
-            </thead>
-            <tbody id="tb"></tbody>
-          </table>
+    <div class="grid kpi-grid">
+      <div class="card kpi navy">
+        <div class="kpi-label">💰 VHCB Investment</div>
+        <div class="kpi-value" id="k1">—</div>
+        <div class="kpi-sub" id="k1s">—</div>
+        <div class="kpi-mini">
+          <div>Projects<strong id="k1m1">—</strong></div>
+          <div>Avg / Project<strong id="k1m2">—</strong></div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Top Grantee Organizations</div>
-            <div class="card-subtitle">Organizations managing the largest share of FY2025 housing portfolio volume.</div>
-          </div>
-        </div>
-        <div id="orgList" class="rank-list"></div>
-      </div>
-    </section>
-
-    <section class="section grid bottom-grid">
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">County Strategic Priority</div>
-            <div class="card-subtitle">Top counties ranked by housing pressure and conservation risk.</div>
-          </div>
-        </div>
-        <div class="chart-wrap sm"><canvas id="c4"></canvas></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-title">Farmland Loss by County</div>
-            <div class="card-subtitle">2017–2022 acres lost, highlighting land conversion urgency.</div>
-          </div>
-        </div>
-        <div class="chart-wrap sm"><canvas id="c5"></canvas></div>
-      </div>
-
-      <div class="card progress-panel">
-        <div class="progress-title">Act 59 — Path to 30×30</div>
-        <div class="progress-bar"><div class="progress-fill"></div></div>
-        <div class="progress-meta">
-          <span>26.8% conserved</span>
-          <span><strong>30% goal →</strong></span>
-        </div>
-
-        <div class="metric-list">
-          <div class="metric"><span>Total Conserved</span><strong>1.58M acres</strong></div>
-          <div class="metric"><span>Gap to 30×30</span><strong>~190K acres</strong></div>
-          <div class="metric"><span>FY25 Farms Conserved</span><strong>21 farms</strong></div>
-          <div class="metric"><span>FY25 Land Protected</span><strong>5,742 acres</strong></div>
-          <div class="metric"><span>FY25 Awards</span><strong>$106.7M</strong></div>
-          <div class="metric"><span>Partner Leverage</span><strong>$181M</strong></div>
-          <div class="metric"><span>Admin Overhead</span><strong>Only 5%</strong></div>
+      <div class="card kpi teal">
+        <div class="kpi-label">🏗 Total Development Cost</div>
+        <div class="kpi-value" id="k2">—</div>
+        <div class="kpi-sub" id="k2s">—</div>
+        <div class="kpi-mini">
+          <div>Partner Capital<strong id="k2m1">—</strong></div>
+          <div>Leverage Pool<strong id="k2m2">—</strong></div>
         </div>
       </div>
-    </section>
 
-    <footer class="footer">
-      Built by <strong>Jaswanth Reddy Lanka</strong> | MS Business Analytics, UMass Amherst (GPA 3.8) |
-      <a href="mailto:jaswanth.reddy060@gmail.com">jaswanth.reddy060@gmail.com</a> |
-      (413) 510-7534 |
-      Data sources: <a href="https://vhcb.org" target="_blank">VHCB FY2025 Annual Report</a>, ACS, USDA, UVM
-    </footer>
-  </div>
+      <div class="card kpi green">
+        <div class="kpi-label">🏠 Housing Units</div>
+        <div class="kpi-value" id="k3">—</div>
+        <div class="kpi-sub">Permanently affordable or mission-aligned units</div>
+        <div class="kpi-mini">
+          <div>Units / Project<strong id="k3m1">—</strong></div>
+          <div>Largest Project<strong id="k3m2">—</strong></div>
+        </div>
+      </div>
 
-  <script>
-    const D = [
-      {id:1,org:"61 N Pleasant Dev",p:"61 North Pleasant",loc:"Bradford",co:"Orange",v:853529,tc:1983523,u:6,ty:"Renovation",h:3,st:"Under Construction"},
-      {id:2,org:"Benn High LIHTC LP",p:"Bennington High Redevelopment",loc:"Bennington",co:"Bennington",v:3006614,tc:11598180,u:17,ty:"Redevelopment",h:3,st:"Under Construction"},
-      {id:3,org:"Champlain Housing Trust",p:"Lake Street Shelter",loc:"St. Albans",co:"Franklin",v:879500,tc:879500,u:10,ty:"Shelter",h:10,st:"Funded"},
-      {id:4,org:"CHT & Evernorth",p:"Supportive Housing — St. Paul St",loc:"Burlington",co:"Chittenden",v:2000000,tc:6898007,u:10,ty:"I/DD Housing",h:10,st:"Funded"},
-      {id:5,org:"CHT & Evernorth",p:"Riggs Meadow",loc:"Hinesburg",co:"Chittenden",v:6091178,tc:19174093,u:36,ty:"New Construction",h:3,st:"Under Construction"},
-      {id:6,org:"CVOEO",p:"St. Albans CVOEO Shelter",loc:"St. Albans",co:"Franklin",v:1351250,tc:1351250,u:15,ty:"Shelter",h:15,st:"Funded"},
-      {id:7,org:"Cornerstone Housing",p:"Cora — Conant Community",loc:"Brandon",co:"Rutland",v:5375329,tc:13501148,u:41,ty:"Preservation",h:0,st:"Under Construction"},
-      {id:8,org:"Cornerstone & Evernorth",p:"Maplewood Commons",loc:"Rutland City",co:"Rutland",v:6574496,tc:14617049,u:30,ty:"New Construction",h:0,st:"Under Construction"},
-      {id:9,org:"Cornerstone & Naylor Breen",p:"Three 33 Jones Drive",loc:"Brandon",co:"Rutland",v:2821356,tc:12452085,u:29,ty:"Adaptive Reuse",h:3,st:"Funded"},
-      {id:10,org:"Downstreet Housing",p:"3-5 Hubbard Street",loc:"Montpelier",co:"Washington",v:651607,tc:1116592,u:4,ty:"Renovation",h:0,st:"Funded"},
-      {id:11,org:"Downstreet Housing",p:"Speranza Inn",loc:"Barre",co:"Washington",v:8985593,tc:9147948,u:42,ty:"Motel Conversion",h:42,st:"Operating"},
-      {id:12,org:"Downstreet Housing",p:"Stevens Branch Apartments",loc:"Barre",co:"Washington",v:6045000,tc:16834204,u:31,ty:"New Construction",h:5,st:"Under Construction"},
-      {id:13,org:"Evernorth",p:"Copley Terrace Acquisition",loc:"Morristown",co:"Lamoille",v:1850000,tc:4903790,u:38,ty:"Acquisition",h:0,st:"Funded"},
-      {id:14,org:"Riverflow Community",p:"Riverflow Community",loc:"Ferrisburgh",co:"Addison",v:425000,tc:1530165,u:4,ty:"I/DD Housing",h:4,st:"Funded"},
-      {id:15,org:"RuralEdge",p:"Caledonia Renaissance",loc:"St. Johnsbury",co:"Caledonia",v:2770000,tc:8117729,u:18,ty:"Preservation",h:0,st:"Under Construction"},
-      {id:16,org:"RuralEdge",p:"Crystal Lake Housing",loc:"Barton",co:"Orleans",v:852000,tc:1934390,u:15,ty:"Preservation",h:0,st:"Funded"},
-      {id:17,org:"RuralEdge",p:"Moose River Warming Shelter",loc:"St. Johnsbury",co:"Caledonia",v:2662500,tc:2700000,u:40,ty:"Shelter Expansion",h:40,st:"Under Construction"},
-      {id:18,org:"RuralEdge",p:"Newport Crossing",loc:"Newport",co:"Orleans",v:10499600,tc:21871159,u:43,ty:"Mixed (LIHTC)",h:0,st:"Under Construction"},
-      {id:19,org:"Upper Valley Services",p:"45 Water Street (Hamesbest)",loc:"Randolph",co:"Orange",v:1367955,tc:2062618,u:3,ty:"I/DD Housing",h:3,st:"Under Construction"},
-      {id:20,org:"WWHT",p:"Alice Holway Drive",loc:"Putney",co:"Windham",v:4440533,tc:15352525,u:25,ty:"New Construction",h:5,st:"Under Construction"},
-      {id:21,org:"WWHT & Evernorth",p:"Chalet Phase I",loc:"Brattleboro",co:"Windham",v:6200000,tc:17765500,u:31,ty:"New Construction",h:6,st:"Funded"},
-      {id:22,org:"Twin Pines & Evernorth",p:"Sykes Mountain Apartments",loc:"Hartford",co:"Windsor",v:5029750,tc:21475850,u:48,ty:"New Construction",h:6,st:"Under Construction"}
-    ];
+      <div class="card kpi red">
+        <div class="kpi-label">🛏 Homeless-Dedicated</div>
+        <div class="kpi-value" id="k4">—</div>
+        <div class="kpi-sub" id="k4s">—</div>
+        <div class="kpi-mini">
+          <div>Share of Units<strong id="k4m1">—</strong></div>
+          <div>Mission Intensity<strong id="k4m2">High</strong></div>
+        </div>
+      </div>
 
-    const CS = [
-      {co:"Orange",hpi:59.6,cri:63.5,fl:-4800},
-      {co:"Lamoille",hpi:66.9,cri:48.5,fl:-2500},
-      {co:"Chittenden",hpi:68.5,cri:43.1,fl:-2900},
-      {co:"Franklin",hpi:62.3,cri:47.7,fl:-6600},
-      {co:"Orleans",hpi:54.2,cri:51.2,fl:-5500},
-      {co:"Bennington",hpi:42.7,cri:62.7,fl:-4900},
-      {co:"Windham",hpi:48.1,cri:55.4,fl:-4400},
-      {co:"Washington",hpi:47.7,cri:51.2,fl:-3800},
-      {co:"Grand Isle",hpi:53.8,cri:39.6,fl:-600},
-      {co:"Essex",hpi:46.5,cri:47.3,fl:-1200},
-      {co:"Windsor",hpi:41.9,cri:48.8,fl:-4800},
-      {co:"Addison",hpi:38.9,cri:46.9,fl:-5600},
-      {co:"Caledonia",hpi:43.5,cri:45.4,fl:-3300},
-      {co:"Rutland",hpi:25.4,cri:48.9,fl:-5600}
-    ];
+      <div class="card kpi gold">
+        <div class="kpi-label">📈 Leverage Ratio</div>
+        <div class="kpi-value" id="k5">—</div>
+        <div class="kpi-sub">Total development dollars per VHCB dollar</div>
+        <div class="kpi-mini">
+          <div>Cost / Unit<strong id="k5m1">—</strong></div>
+          <div>VHCB / Unit<strong id="k5m2">—</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    const COLORS = {
-      navy:"#12355B",
-      teal:"#16697A",
-      green:"#2F6B3C",
-      gold:"#C9A227",
-      red:"#B54745",
-      purple:"#6B5B95",
-      gray:"#98A2B3"
-    };
+  <section class="section grid chart-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Investment by County</div>
+          <div class="card-subtitle">Where FY2025 housing capital is concentrated across Vermont counties.</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c1"></canvas></div>
+    </div>
 
-    const PALETTE = [
-      COLORS.navy, COLORS.teal, COLORS.green, COLORS.gold, COLORS.red,
-      COLORS.purple, "#4E79A7", "#59A14F", "#E15759", "#F28E2B"
-    ];
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Project Mix</div>
+          <div class="card-subtitle">Distribution of VHCB investment by project type.</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c2"></canvas></div>
+    </div>
 
-    function money(n){
-      if(n >= 1e9) return "$" + (n/1e9).toFixed(1) + "B";
-      if(n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
-      if(n >= 1e3) return "$" + (n/1e3).toFixed(0) + "K";
-      return "$" + n.toLocaleString();
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Units by Status</div>
+          <div class="card-subtitle">Portfolio staging across funded, active, and operating projects.</div>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="c3"></canvas></div>
+    </div>
+  </section>
+
+  <section class="section grid detail-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">FY2025 Housing Awards — Project Detail</div>
+          <div class="card-subtitle">Project-level view of award size, development cost, units, and delivery status.</div>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="tl">Project</th>
+              <th class="tl">Location</th>
+              <th class="tr">VHCB Award</th>
+              <th class="tr">Total Cost</th>
+              <th class="tr">Units</th>
+              <th class="tl">Type</th>
+              <th class="tr">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Top Grantee Organizations</div>
+          <div class="card-subtitle">Organizations managing the largest share of FY2025 housing portfolio volume.</div>
+        </div>
+      </div>
+      <div id="orgList" class="rank-list"></div>
+    </div>
+  </section>
+
+  <section class="section grid bottom-grid">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">County Strategic Priority</div>
+          <div class="card-subtitle">Top counties ranked by housing pressure and conservation risk.</div>
+        </div>
+      </div>
+      <div class="chart-wrap sm"><canvas id="c4"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Farmland Loss by County</div>
+          <div class="card-subtitle">2017–2022 acres lost, highlighting land conversion urgency.</div>
+        </div>
+      </div>
+      <div class="chart-wrap sm"><canvas id="c5"></canvas></div>
+    </div>
+
+    <div class="card progress-panel">
+      <div class="progress-title">Act 59 — Path to 30×30</div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div class="progress-meta">
+        <span>26.8% conserved</span>
+        <span><strong>30% goal →</strong></span>
+      </div>
+
+      <div class="metric-list">
+        <div class="metric"><span>Total Conserved</span><strong>1.58M acres</strong></div>
+        <div class="metric"><span>Gap to 30×30</span><strong>~190K acres</strong></div>
+        <div class="metric"><span>FY25 Farms Conserved</span><strong>21 farms</strong></div>
+        <div class="metric"><span>FY25 Land Protected</span><strong>5,742 acres</strong></div>
+        <div class="metric"><span>FY25 Awards</span><strong>$106.7M</strong></div>
+        <div class="metric"><span>Partner Leverage</span><strong>$181M</strong></div>
+        <div class="metric"><span>Admin Overhead</span><strong>Only 5%</strong></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    Built by <strong>Jaswanth Reddy Lanka</strong> | MS Business Analytics, UMass Amherst (GPA 3.8) |
+    <a href="mailto:jaswanth.reddy060@gmail.com">jaswanth.reddy060@gmail.com</a> |
+    (413) 510-7534 |
+    Data sources: <a href="https://vhcb.org" target="_blank">VHCB FY2025 Annual Report</a>, ACS, USDA, UVM
+  </footer>
+</div>
+
+<script>
+const D = [
+{id:1,org:"61 N Pleasant Dev",p:"61 North Pleasant",loc:"Bradford",co:"Orange",v:853529,tc:1983523,u:6,ty:"Renovation",h:3,st:"Under Construction"},
+{id:2,org:"Benn High LIHTC LP",p:"Bennington High Redevelopment",loc:"Bennington",co:"Bennington",v:3006614,tc:11598180,u:17,ty:"Redevelopment",h:3,st:"Under Construction"},
+{id:3,org:"Champlain Housing Trust",p:"Lake Street Shelter",loc:"St. Albans",co:"Franklin",v:879500,tc:879500,u:10,ty:"Shelter",h:10,st:"Funded"},
+{id:4,org:"CHT & Evernorth",p:"Supportive Housing — St. Paul St",loc:"Burlington",co:"Chittenden",v:2000000,tc:6898007,u:10,ty:"I/DD Housing",h:10,st:"Funded"},
+{id:5,org:"CHT & Evernorth",p:"Riggs Meadow",loc:"Hinesburg",co:"Chittenden",v:6091178,tc:19174093,u:36,ty:"New Construction",h:3,st:"Under Construction"},
+{id:6,org:"CVOEO",p:"St. Albans CVOEO Shelter",loc:"St. Albans",co:"Franklin",v:1351250,tc:1351250,u:15,ty:"Shelter",h:15,st:"Funded"},
+{id:7,org:"Cornerstone Housing",p:"Cora — Conant Community",loc:"Brandon",co:"Rutland",v:5375329,tc:13501148,u:41,ty:"Preservation",h:0,st:"Under Construction"},
+{id:8,org:"Cornerstone & Evernorth",p:"Maplewood Commons",loc:"Rutland City",co:"Rutland",v:6574496,tc:14617049,u:30,ty:"New Construction",h:0,st:"Under Construction"},
+{id:9,org:"Cornerstone & Naylor Breen",p:"Three 33 Jones Drive",loc:"Brandon",co:"Rutland",v:2821356,tc:12452085,u:29,ty:"Adaptive Reuse",h:3,st:"Funded"},
+{id:10,org:"Downstreet Housing",p:"3-5 Hubbard Street",loc:"Montpelier",co:"Washington",v:651607,tc:1116592,u:4,ty:"Renovation",h:0,st:"Funded"},
+{id:11,org:"Downstreet Housing",p:"Speranza Inn",loc:"Barre",co:"Washington",v:8985593,tc:9147948,u:42,ty:"Motel Conversion",h:42,st:"Operating"},
+{id:12,org:"Downstreet Housing",p:"Stevens Branch Apartments",loc:"Barre",co:"Washington",v:6045000,tc:16834204,u:31,ty:"New Construction",h:5,st:"Under Construction"},
+{id:13,org:"Evernorth",p:"Copley Terrace Acquisition",loc:"Morristown",co:"Lamoille",v:1850000,tc:4903790,u:38,ty:"Acquisition",h:0,st:"Funded"},
+{id:14,org:"Riverflow Community",p:"Riverflow Community",loc:"Ferrisburgh",co:"Addison",v:425000,tc:1530165,u:4,ty:"I/DD Housing",h:4,st:"Funded"},
+{id:15,org:"RuralEdge",p:"Caledonia Renaissance",loc:"St. Johnsbury",co:"Caledonia",v:2770000,tc:8117729,u:18,ty:"Preservation",h:0,st:"Under Construction"},
+{id:16,org:"RuralEdge",p:"Crystal Lake Housing",loc:"Barton",co:"Orleans",v:852000,tc:1934390,u:15,ty:"Preservation",h:0,st:"Funded"},
+{id:17,org:"RuralEdge",p:"Moose River Warming Shelter",loc:"St. Johnsbury",co:"Caledonia",v:2662500,tc:2700000,u:40,ty:"Shelter Expansion",h:40,st:"Under Construction"},
+{id:18,org:"RuralEdge",p:"Newport Crossing",loc:"Newport",co:"Orleans",v:10499600,tc:21871159,u:43,ty:"Mixed (LIHTC)",h:0,st:"Under Construction"},
+{id:19,org:"Upper Valley Services",p:"45 Water Street (Hamesbest)",loc:"Randolph",co:"Orange",v:1367955,tc:2062618,u:3,ty:"I/DD Housing",h:3,st:"Under Construction"},
+{id:20,org:"WWHT",p:"Alice Holway Drive",loc:"Putney",co:"Windham",v:4440533,tc:15352525,u:25,ty:"New Construction",h:5,st:"Under Construction"},
+{id:21,org:"WWHT & Evernorth",p:"Chalet Phase I",loc:"Brattleboro",co:"Windham",v:6200000,tc:17765500,u:31,ty:"New Construction",h:6,st:"Funded"},
+{id:22,org:"Twin Pines & Evernorth",p:"Sykes Mountain Apartments",loc:"Hartford",co:"Windsor",v:5029750,tc:21475850,u:48,ty:"New Construction",h:6,st:"Under Construction"}
+];
+
+const CS = [
+{co:"Orange",hpi:59.6,cri:63.5,fl:-4800},
+{co:"Lamoille",hpi:66.9,cri:48.5,fl:-2500},
+{co:"Chittenden",hpi:68.5,cri:43.1,fl:-2900},
+{co:"Franklin",hpi:62.3,cri:47.7,fl:-6600},
+{co:"Orleans",hpi:54.2,cri:51.2,fl:-5500},
+{co:"Bennington",hpi:42.7,cri:62.7,fl:-4900},
+{co:"Windham",hpi:48.1,cri:55.4,fl:-4400},
+{co:"Washington",hpi:47.7,cri:51.2,fl:-3800},
+{co:"Grand Isle",hpi:53.8,cri:39.6,fl:-600},
+{co:"Essex",hpi:46.5,cri:47.3,fl:-1200},
+{co:"Windsor",hpi:41.9,cri:48.8,fl:-4800},
+{co:"Addison",hpi:38.9,cri:46.9,fl:-5600},
+{co:"Caledonia",hpi:43.5,cri:45.4,fl:-3300},
+{co:"Rutland",hpi:25.4,cri:48.9,fl:-5600}
+];
+
+const COLORS = {
+  navy:"#12355B",
+  teal:"#16697A",
+  green:"#2F6B3C",
+  gold:"#C9A227",
+  red:"#B54745",
+  purple:"#6B5B95",
+  gray:"#98A2B3"
+};
+
+const PALETTE = [
+  COLORS.navy, COLORS.teal, COLORS.green, COLORS.gold, COLORS.red,
+  COLORS.purple, "#4E79A7", "#59A14F", "#E15759", "#F28E2B"
+];
+
+function money(n){
+  if(n >= 1e9) return "$" + (n/1e9).toFixed(1) + "B";
+  if(n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M";
+  if(n >= 1e3) return "$" + (n/1e3).toFixed(0) + "K";
+  return "$" + n.toLocaleString();
+}
+function compact(n){
+  return n.toLocaleString();
+}
+function badgeClass(status){
+  return status === "Operating" ? "b-op" : status === "Under Construction" ? "b-uc" : "b-fu";
+}
+
+const fC = document.getElementById("fC");
+const fT = document.getElementById("fT");
+
+[...new Set(D.map(d => d.co))].sort().forEach(c => {
+  const o = document.createElement("option");
+  o.value = c;
+  o.textContent = c + " County";
+  fC.appendChild(o);
+});
+
+[...new Set(D.map(d => d.ty))].sort().forEach(t => {
+  const o = document.createElement("option");
+  o.value = t;
+  o.textContent = t;
+  fT.appendChild(o);
+});
+
+Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+Chart.defaults.color = "#667085";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 14;
+Chart.defaults.elements.arc.borderWidth = 0;
+Chart.defaults.scale.grid.color = "#EEF2F6";
+Chart.defaults.scale.ticks.backdropColor = "transparent";
+
+let ch1, ch2, ch3, ch4, ch5;
+
+function renderDynamic(){
+  const county = fC.value;
+  const type = fT.value;
+
+  const filtered = D.filter(d =>
+    (county === "All" || d.co === county) &&
+    (type === "All" || d.ty === type)
+  );
+
+  const totalVHCB = filtered.reduce((s,d) => s + d.v, 0);
+  const totalCost = filtered.reduce((s,d) => s + d.tc, 0);
+  const totalUnits = filtered.reduce((s,d) => s + d.u, 0);
+  const homelessUnits = filtered.reduce((s,d) => s + d.h, 0);
+  const projects = filtered.length;
+  const leveragePool = totalCost - totalVHCB;
+  const largestUnits = filtered.length ? Math.max(...filtered.map(d => d.u)) : 0;
+
+  document.getElementById("k1").textContent = money(totalVHCB);
+  document.getElementById("k1s").textContent = projects + " housing projects in current view";
+  document.getElementById("k1m1").textContent = compact(projects);
+  document.getElementById("k1m2").textContent = projects ? money(totalVHCB / projects) : "—";
+
+  document.getElementById("k2").textContent = money(totalCost);
+  document.getElementById("k2s").textContent = money(leveragePool) + " leveraged beyond VHCB";
+  document.getElementById("k2m1").textContent = money(leveragePool);
+  document.getElementById("k2m2").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
+
+  document.getElementById("k3").textContent = compact(totalUnits);
+  document.getElementById("k3m1").textContent = projects ? (totalUnits / projects).toFixed(1) : "—";
+  document.getElementById("k3m2").textContent = compact(largestUnits) + " units";
+
+  document.getElementById("k4").textContent = compact(homelessUnits);
+  document.getElementById("k4s").textContent = totalUnits ? Math.round((homelessUnits/totalUnits)*100) + "% of visible units are homeless-dedicated" : "—";
+  document.getElementById("k4m1").textContent = totalUnits ? Math.round((homelessUnits/totalUnits)*100) + "%" : "—";
+
+  document.getElementById("k5").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
+  document.getElementById("k5m1").textContent = totalUnits ? money(totalCost / totalUnits) : "—";
+  document.getElementById("k5m2").textContent = totalUnits ? money(totalVHCB / totalUnits) : "—";
+  document.getElementById("execStat").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
+
+  const byCounty = {};
+  filtered.forEach(d => byCounty[d.co] = (byCounty[d.co] || 0) + d.v);
+  const countyEntries = Object.entries(byCounty).sort((a,b) => b[1]-a[1]);
+
+  if(ch1) ch1.destroy();
+  ch1 = new Chart(document.getElementById("c1"), {
+    type: "bar",
+    data: {
+      labels: countyEntries.map(x => x[0]),
+      datasets: [{
+        label: "VHCB Award",
+        data: countyEntries.map(x => x[1]),
+        backgroundColor: COLORS.navy,
+        borderRadius: 8,
+        barThickness: 18
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      indexAxis:"y",
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c => " " + money(c.raw)}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{callback:v => money(v)}},
+        y:{grid:{display:false}}
+      }
     }
+  });
 
-    function compact(n){
-      return n.toLocaleString();
+  const byType = {};
+  filtered.forEach(d => byType[d.ty] = (byType[d.ty] || 0) + d.v);
+  const typeEntries = Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+
+  if(ch2) ch2.destroy();
+  ch2 = new Chart(document.getElementById("c2"), {
+    type: "doughnut",
+    data: {
+      labels: typeEntries.map(x => x[0]),
+      datasets: [{
+        data: typeEntries.map(x => x[1]),
+        backgroundColor: PALETTE.slice(0, typeEntries.length),
+        cutout: "62%"
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      plugins:{
+        tooltip:{callbacks:{label:c => `${c.label}: ${money(c.raw)}`}},
+        legend:{position:"bottom"}
+      }
     }
+  });
 
-    function badgeClass(status){
-      return status === "Operating" ? "b-op" : status === "Under Construction" ? "b-uc" : "b-fu";
+  const byStatus = {};
+  filtered.forEach(d => byStatus[d.st] = (byStatus[d.st] || 0) + d.u);
+  const statusEntries = Object.entries(byStatus);
+
+  if(ch3) ch3.destroy();
+  ch3 = new Chart(document.getElementById("c3"), {
+    type: "pie",
+    data: {
+      labels: statusEntries.map(x => x[0]),
+      datasets: [{
+        data: statusEntries.map(x => x[1]),
+        backgroundColor: [COLORS.green, COLORS.gold, COLORS.teal, COLORS.red]
+      }]
+    },
+    options: {
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{position:"bottom"},
+        tooltip:{callbacks:{label:c => `${c.label}: ${compact(c.raw)} units`}}
+      }
     }
+  });
 
-    const fC = document.getElementById("fC");
-    const fT = document.getElementById("fT");
+  const tb = document.getElementById("tb");
+  tb.innerHTML = "";
+  filtered.forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="tl"><span class="project-name">${d.p}</span></td>
+      <td class="tl">${d.loc}</td>
+      <td class="tr" style="font-weight:700;color:${COLORS.navy}">${money(d.v)}</td>
+      <td class="tr">${money(d.tc)}</td>
+      <td class="tr" style="font-weight:700">${compact(d.u)}</td>
+      <td class="tl">${d.ty}</td>
+      <td class="tr"><span class="badge ${badgeClass(d.st)}">${d.st}</span></td>
+    `;
+    tb.appendChild(tr);
+  });
 
-    [...new Set(D.map(d => d.co))].sort().forEach(c => {
-      const o = document.createElement("option");
-      o.value = c;
-      o.textContent = c + " County";
-      fC.appendChild(o);
-    });
+  const orgMap = {};
+  filtered.forEach(d => {
+    if(!orgMap[d.org]) orgMap[d.org] = { name:d.org, count:0, value:0, units:0 };
+    orgMap[d.org].count += 1;
+    orgMap[d.org].value += d.v;
+    orgMap[d.org].units += d.u;
+  });
 
-    [...new Set(D.map(d => d.ty))].sort().forEach(t => {
-      const o = document.createElement("option");
-      o.value = t;
-      o.textContent = t;
-      fT.appendChild(o);
-    });
+  const orgList = Object.values(orgMap).sort((a,b)=>b.value-a.value).slice(0,8);
+  const orgWrap = document.getElementById("orgList");
+  orgWrap.innerHTML = "";
+  orgList.forEach((o, i) => {
+    const div = document.createElement("div");
+    div.className = "rank-row";
+    div.innerHTML = `
+      <div class="rank-num">${i+1}</div>
+      <div>
+        <div class="rank-name">${o.name}</div>
+        <div class="rank-meta">${o.count} project${o.count > 1 ? "s" : ""} • ${o.units} units</div>
+      </div>
+      <div class="rank-val">${money(o.value)}</div>
+      <div class="rank-meta">VHCB $</div>
+    `;
+    orgWrap.appendChild(div);
+  });
+}
 
-    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
-    Chart.defaults.color = "#667085";
-    Chart.defaults.plugins.legend.labels.usePointStyle = true;
-    Chart.defaults.plugins.legend.labels.boxWidth = 10;
-    Chart.defaults.plugins.legend.labels.padding = 14;
-    Chart.defaults.elements.arc.borderWidth = 0;
-    Chart.defaults.scale.grid.color = "#EEF2F6";
-    Chart.defaults.scale.ticks.backdropColor = "transparent";
+function renderStatic(){
+  const ranked = CS.slice()
+    .map(c => ({...c, sni: c.hpi * 0.55 + c.cri * 0.45}))
+    .sort((a,b) => b.sni - a.sni)
+    .slice(0,10);
 
-    let ch1, ch2, ch3, ch4, ch5;
-
-    function renderDynamic(){
-      const county = fC.value;
-      const type = fT.value;
-
-      const filtered = D.filter(d =>
-        (county === "All" || d.co === county) &&
-        (type === "All" || d.ty === type)
-      );
-
-      const totalVHCB = filtered.reduce((s,d) => s + d.v, 0);
-      const totalCost = filtered.reduce((s,d) => s + d.tc, 0);
-      const totalUnits = filtered.reduce((s,d) => s + d.u, 0);
-      const homelessUnits = filtered.reduce((s,d) => s + d.h, 0);
-      const projects = filtered.length;
-      const leveragePool = totalCost - totalVHCB;
-      const largestUnits = filtered.length ? Math.max(...filtered.map(d => d.u)) : 0;
-
-      document.getElementById("k1").textContent = money(totalVHCB);
-      document.getElementById("k1s").textContent = projects + " housing projects in current view";
-      document.getElementById("k1m1").textContent = compact(projects);
-      document.getElementById("k1m2").textContent = projects ? money(totalVHCB / projects) : "—";
-
-      document.getElementById("k2").textContent = money(totalCost);
-      document.getElementById("k2s").textContent = money(leveragePool) + " leveraged beyond VHCB";
-      document.getElementById("k2m1").textContent = money(leveragePool);
-      document.getElementById("k2m2").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
-
-      document.getElementById("k3").textContent = compact(totalUnits);
-      document.getElementById("k3m1").textContent = projects ? (totalUnits / projects).toFixed(1) : "—";
-      document.getElementById("k3m2").textContent = compact(largestUnits) + " units";
-
-      document.getElementById("k4").textContent = compact(homelessUnits);
-      document.getElementById("k4s").textContent = totalUnits ? Math.round((homelessUnits/totalUnits)*100) + "% of visible units are homeless-dedicated" : "—";
-      document.getElementById("k4m1").textContent = totalUnits ? Math.round((homelessUnits/totalUnits)*100) + "%" : "—";
-
-      document.getElementById("k5").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
-      document.getElementById("k5m1").textContent = totalUnits ? money(totalCost / totalUnits) : "—";
-      document.getElementById("k5m2").textContent = totalUnits ? money(totalVHCB / totalUnits) : "—";
-      document.getElementById("execStat").textContent = totalVHCB ? (totalCost / totalVHCB).toFixed(1) + "×" : "—";
-
-      const byCounty = {};
-      filtered.forEach(d => byCounty[d.co] = (byCounty[d.co] || 0) + d.v);
-      const countyEntries = Object.entries(byCounty).sort((a,b) => b[1]-a[1]);
-
-      if(ch1) ch1.destroy();
-      ch1 = new Chart(document.getElementById("c1"), {
-        type: "bar",
-        data: {
-          labels: countyEntries.map(x => x[0]),
-          datasets: [{
-            label: "VHCB Award",
-            data: countyEntries.map(x => x[1]),
-            backgroundColor: COLORS.navy,
-            borderRadius: 8,
-            barThickness: 18
-          }]
+  if(ch4) ch4.destroy();
+  ch4 = new Chart(document.getElementById("c4"), {
+    type:"bar",
+    data:{
+      labels: ranked.map(d => d.co),
+      datasets:[
+        {
+          label:"Housing Pressure",
+          data: ranked.map(d => d.hpi),
+          backgroundColor: COLORS.red,
+          borderRadius: 6,
+          barThickness: 14
         },
-        options: {
-          maintainAspectRatio:false,
-          indexAxis:"y",
-          plugins:{
-            legend:{display:false},
-            tooltip:{callbacks:{label:c => " " + money(c.raw)}}
-          },
-          scales:{
-            x:{grid:{display:false}, ticks:{callback:v => money(v)}},
-            y:{grid:{display:false}}
-          }
+        {
+          label:"Conservation Risk",
+          data: ranked.map(d => d.cri),
+          backgroundColor: COLORS.green,
+          borderRadius: 6,
+          barThickness: 14
         }
-      });
-
-      const byType = {};
-      filtered.forEach(d => byType[d.ty] = (byType[d.ty] || 0) + d.v);
-      const typeEntries = Object.entries(byType).sort((a,b)=>b[1]-a[1]);
-
-      if(ch2) ch2.destroy();
-      ch2 = new Chart(document.getElementById("c2"), {
-        type: "doughnut",
-        data: {
-          labels: typeEntries.map(x => x[0]),
-          datasets: [{
-            data: typeEntries.map(x => x[1]),
-            backgroundColor: PALETTE.slice(0, typeEntries.length),
-            cutout: "62%"
-          }]
-        },
-        options: {
-          maintainAspectRatio:false,
-          plugins:{
-            tooltip:{callbacks:{label:c => `${c.label}: ${money(c.raw)}`}},
-            legend:{position:"bottom"}
-          }
-        }
-      });
-
-      const byStatus = {};
-      filtered.forEach(d => byStatus[d.st] = (byStatus[d.st] || 0) + d.u);
-      const statusEntries = Object.entries(byStatus);
-
-      if(ch3) ch3.destroy();
-      ch3 = new Chart(document.getElementById("c3"), {
-        type: "pie",
-        data: {
-          labels: statusEntries.map(x => x[0]),
-          datasets: [{
-            data: statusEntries.map(x => x[1]),
-            backgroundColor: [COLORS.green, COLORS.gold, COLORS.teal, COLORS.red]
-          }]
-        },
-        options: {
-          maintainAspectRatio:false,
-          plugins:{
-            legend:{position:"bottom"},
-            tooltip:{callbacks:{label:c => `${c.label}: ${compact(c.raw)} units`}}
-          }
-        }
-      });
-
-      const tb = document.getElementById("tb");
-      tb.innerHTML = "";
-      filtered.forEach(d => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="tl"><span class="project-name">${d.p}</span></td>
-          <td class="tl">${d.loc}</td>
-          <td class="tr" style="font-weight:700;color:${COLORS.navy}">${money(d.v)}</td>
-          <td class="tr">${money(d.tc)}</td>
-          <td class="tr" style="font-weight:700">${compact(d.u)}</td>
-          <td class="tl">${d.ty}</td>
-          <td class="tr"><span class="badge ${badgeClass(d.st)}">${d.st}</span></td>
-        `;
-        tb.appendChild(tr);
-      });
-
-      const orgMap = {};
-      filtered.forEach(d => {
-        if(!orgMap[d.org]) orgMap[d.org] = { name:d.org, count:0, value:0, units:0 };
-        orgMap[d.org].count += 1;
-        orgMap[d.org].value += d.v;
-        orgMap[d.org].units += d.u;
-      });
-
-      const orgList = Object.values(orgMap).sort((a,b)=>b.value-a.value).slice(0,8);
-      const orgWrap = document.getElementById("orgList");
-      orgWrap.innerHTML = "";
-      orgList.forEach((o, i) => {
-        const div = document.createElement("div");
-        div.className = "rank-row";
-        div.innerHTML = `
-          <div class="rank-num">${i+1}</div>
-          <div>
-            <div class="rank-name">${o.name}</div>
-            <div class="rank-meta">${o.count} project${o.count > 1 ? "s" : ""} • ${o.units} units</div>
-          </div>
-          <div class="rank-val">${money(o.value)}</div>
-          <div class="rank-meta">VHCB $</div>
-        `;
-        orgWrap.appendChild(div);
-      });
+      ]
+    },
+    options:{
+      maintainAspectRatio:false,
+      plugins:{legend:{position:"bottom"}},
+      scales:{
+        x:{grid:{display:false}},
+        y:{max:100}
+      }
     }
+  });
 
-    function renderStatic(){
-      const ranked = CS.slice()
-        .map(c => ({...c, sni: c.hpi * 0.55 + c.cri * 0.45}))
-        .sort((a,b) => b.sni - a.sni)
-        .slice(0,10);
+  const farmLoss = CS.slice().sort((a,b)=>a.fl-b.fl).slice(0,8);
 
-      if(ch4) ch4.destroy();
-      ch4 = new Chart(document.getElementById("c4"), {
-        type:"bar",
-        data:{
-          labels: ranked.map(d => d.co),
-          datasets:[
-            {
-              label:"Housing Pressure",
-              data: ranked.map(d => d.hpi),
-              backgroundColor: COLORS.red,
-              borderRadius: 6,
-              barThickness: 14
-            },
-            {
-              label:"Conservation Risk",
-              data: ranked.map(d => d.cri),
-              backgroundColor: COLORS.green,
-              borderRadius: 6,
-              barThickness: 14
-            }
-          ]
+  if(ch5) ch5.destroy();
+  ch5 = new Chart(document.getElementById("c5"), {
+    type:"bar",
+    data:{
+      labels: farmLoss.map(d => d.co),
+      datasets:[{
+        label:"Farmland Lost",
+        data: farmLoss.map(d => d.fl),
+        backgroundColor: COLORS.gold,
+        borderRadius: 8,
+        barThickness: 16
+      }]
+    },
+    options:{
+      maintainAspectRatio:false,
+      indexAxis:"y",
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c => ` ${Math.abs(c.raw).toLocaleString()} acres lost`}}
+      },
+      scales:{
+        x:{
+          grid:{display:false},
+          ticks:{callback:v => (v/1000).toFixed(1) + "K"}
         },
-        options:{
-          maintainAspectRatio:false,
-          plugins:{legend:{position:"bottom"}},
-          scales:{
-            x:{grid:{display:false}},
-            y:{max:100}
-          }
-        }
-      });
-
-      const farmLoss = CS.slice().sort((a,b)=>a.fl-b.fl).slice(0,8);
-
-      if(ch5) ch5.destroy();
-      ch5 = new Chart(document.getElementById("c5"), {
-        type:"bar",
-        data:{
-          labels: farmLoss.map(d => d.co),
-          datasets:[{
-            label:"Farmland Lost",
-            data: farmLoss.map(d => d.fl),
-            backgroundColor: COLORS.gold,
-            borderRadius: 8,
-            barThickness: 16
-          }]
-        },
-        options:{
-          maintainAspectRatio:false,
-          indexAxis:"y",
-          plugins:{
-            legend:{display:false},
-            tooltip:{callbacks:{label:c => ` ${Math.abs(c.raw).toLocaleString()} acres lost`}}
-          },
-          scales:{
-            x:{
-              grid:{display:false},
-              ticks:{callback:v => (v/1000).toFixed(1) + "K"}
-            },
-            y:{grid:{display:false}}
-          }
-        }
-      });
+        y:{grid:{display:false}}
+      }
     }
+  });
+}
 
-    fC.addEventListener("change", renderDynamic);
-    fT.addEventListener("change", renderDynamic);
+fC.addEventListener("change", renderDynamic);
+fT.addEventListener("change", renderDynamic);
 
-    renderDynamic();
-    renderStatic();
-  </script>
+renderDynamic();
+renderStatic();
+</script>
 </body>
 </html>
